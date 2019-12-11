@@ -7,8 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class LibraryDAO implements DAO<lab5.Library, Integer> {
+public class LibraryDAO implements DAO<Library, Integer> {
 
     /**
      * SQL queries for library table.
@@ -19,11 +20,17 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
         DELETE("DELETE FROM library WHERE id = (?) RETURNING id"),
         UPDATE("UPDATE library SET name = (?) WHERE id = (?) RETURNING id"),
 
-        GET_COUNT_BOOK_LIST("SELECT * FROM count_books WHERE library_id=(?)"),
-        GET_RELEASE_BOOKS("SELECT books.* " +
-                "FROM count_books JOIN books ON count_books .book_id=books .id "+
-                "JOIN library ON count_books .library_id=library.id "+
-                "WHERE library.id=(?) AND books .release_day<current_date");
+        GET_COUNT_MED_LIST("SELECT * FROM count_books WHERE library_id=(?)"),
+        GET_OVERDUE_MEDICINES("SELECT books.* " +
+                "FROM count_books JOIN books ON count_books.book_id=books.id "+
+                "JOIN library ON count_books.library_id=library.id "+
+                "WHERE library.id=(?) AND books.issue_day<current_date"),
+        DELETE_ISSUE_BOOKS_IN_LIBRARY("Delete From books "+
+                "WHERE books IN(SELECT books " +
+                "FROM count_books JOIN books ON count_books.medicine_id=books.id "+
+                "JOIN library ON count_books.library_id=library.id "+
+                "WHERE library.id=(?) AND books.overdue_day<current_date)"),
+        GET_ALL("SELECT * FROM library");
 
         String QUERY;
 
@@ -54,7 +61,7 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
      * @throws SQLException
      */
     @Override
-    public boolean create(lab5.Library library) throws SQLException {
+    public boolean create(Library library) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(LibrarySQL.INSERT.QUERY);
         statement.setInt(1, library.getId());
         statement.setString(2, library.getName());
@@ -70,15 +77,14 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
      * @throws SQLException
      */
     @Override
-    public CountBook read(Integer id) throws SQLException {
-        lab5.Library result = new lab5.Library();
+    public Book read(Integer id) throws SQLException {
+        Library result = new Library();
         result.setId(-1);
         PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET.QUERY);
         statement.setInt(1,id);
         ResultSet resultSet = statement.executeQuery();
         if(resultSet.next()) {
             result.setId(resultSet.getInt("id"));
-            result.setWorker(new WorkerDAO(connection).read(resultSet.getInt("librarian_id")));
             result.setCountBooks(getListCountBook(result));
             result.setName(resultSet.getString("name"));
         }
@@ -93,7 +99,7 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
      * @throws SQLException
      */
     @Override
-    public boolean update(lab5.Library library) throws SQLException {
+    public boolean update(Library library) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(LibrarySQL.UPDATE.QUERY);
         statement.setString(1, library.getName());
         statement.setInt(2, library.getId());
@@ -109,22 +115,13 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
      * @throws SQLException
      */
     @Override
-    public boolean delete(lab5.Library library) throws SQLException {
+    public boolean delete(Library library) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(LibrarySQL.DELETE.QUERY);
         statement.setInt(1, library.getId());
 
         return statement.executeQuery().next();
     }
 
-    @Override
-    public boolean update(lab5Test.CountBook countBook) throws SQLException {
-        return false;
-    }
-
-    @Override
-    public boolean delete(lab5Test.CountBook countBook) throws SQLException {
-        return false;
-    }
 
     /**
      * Get list of Book and their count into Library
@@ -133,47 +130,85 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
      * @return list of CountBook
      * @throws SQLException
      */
-    public List<lab5.CountBook> getListCountBook(lab5.Library library) throws SQLException {
-        List<lab5.CountBook> list = new ArrayList<>();
+    public List<CountBook> getListCountBook(Library library) throws SQLException {
+        List<CountBook> list = new ArrayList<>();
 
-        try( PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_COUNT_BOOK_LIST.QUERY)) {
+        try( PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_COUNT_MED_LIST.QUERY)) {
             statement.setInt(1, library.getId());
             ResultSet resultSet = statement.executeQuery();
 
-            do {
-              //  CountBook countBook = new CountBookDAO(connection).resultSetToObj(resultSet);
-                lab5.CountBook countBook = new lab5.CountBookDAO(connection).resultSetToObj(resultSet);
+            while (resultSet.next()){
+                CountBook countBook = new CountBookDAO(connection).resultSetToObj(resultSet);
                 list.add(countBook);
-            } while (!resultSet.isLast());
+            }
         }catch (Exception e) {
             e.getStackTrace();
         }
-        list.forEach(System.out::println);
+        //list.forEach(System.out::println);
         return list;
     }
 
     /**
-     * Get List of released books in library
+     * Get List of overdue books in library
      *
      * @param library Library
-     * @return list of released Medicines
+     * @return list of overdue Books
      * @throws SQLException
      */
-    private List<lab5.Book> getListOfOverdueMedicines(lab5.Library library) throws SQLException {
-        List<lab5.Book> list = new ArrayList<>();
+    private List<Book> getListOfOverdueBooks(Library library) throws SQLException {
+        List<Book> list = new ArrayList<>();
 
-        try(PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_RELEASE_BOOKS.QUERY)) {
+        try(PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_OVERDUE_MEDICINES.QUERY)) {
             statement.setInt(1, library.getId());
             ResultSet resultSet = statement.executeQuery();
 
-            do {
-                Book book = new BookDAO(connection).resultSetToObj(resultSet);
-                list.add(book);
-            } while (!resultSet.isLast());
+            while (resultSet.next()) {
+                Book medicine = new BookDAO(connection).resultSetToObj(resultSet);
+                list.add(medicine);
+            }
 
             return list;
         }
     }
+
+    /**
+     * Delete all overdue Books in Library
+     *
+     * @param library Library
+     * @throws SQLException
+     */
+    public void deleteOverdueBooks(Library library) throws SQLException {
+        List<Book> medicineList = getListOfOverdueBooks(library);
+
+        for (Book medicine: medicineList) {
+            new BookDAO(connection).delete(medicine);
+        }
+    }
+
+    public void deleteById(Integer id) {
+        PreparedStatement statement = null;
+        try {
+            statement = Objects.requireNonNull(connection).prepareStatement(LibrarySQL.DELETE.QUERY);
+            statement.setLong(1,id);
+            statement.execute();
+        }catch (SQLException e){
+            e.getStackTrace();
+        }
+    }
+
+    /**
+     * Delete all overdue Books in Library by SQL
+     *
+     * @param library Library
+     * @throws SQLException
+     */
+    public boolean deleteOverdueBooksInLibrary(Library library) throws SQLException {
+        try(PreparedStatement statement = connection.prepareStatement(LibrarySQL.DELETE_ISSUE_BOOKS_IN_LIBRARY.QUERY)) {
+            statement.setInt(1,library.getId());
+            return statement.execute();
+        }
+    }
+
 
     /**
      * Convert ResultSer into Library Object
@@ -182,18 +217,27 @@ public class LibraryDAO implements DAO<lab5.Library, Integer> {
      * @return Library object
      * @throws SQLException
      */
-    @Override
-    public lab5.Library resultSetToObj(ResultSet rs) throws SQLException {
-        lab5.Library library = new Library();
+    public Library resultSetToObj(ResultSet rs) throws SQLException {
+        Library library = new Library();
 
-        if(rs.next()) {
-            library.setId(rs.getInt("id"));
-            library.setName(rs.getString("name"));
-            library.setCountBooks(getListCountBook(library));
-            library.setWorker(new WorkerDAO(connection).read(rs.getInt("librarian_id")));
-        }
-
+        library.setId(rs.getInt("id"));
+        library.setName(rs.getString("name"));
+        library.setCountBooks(getListCountBook(library));
+//
         return library;
+    }
+
+    public List<Library> findAll() throws SQLException {
+        List<Library> list = new ArrayList<>();
+        try(PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_ALL.QUERY)) {
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()){
+                Library p = resultSetToObj(resultSet);
+                list.add(p);
+            }
+            return list;
+        }
     }
 
 }

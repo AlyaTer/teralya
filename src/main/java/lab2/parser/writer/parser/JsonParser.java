@@ -2,7 +2,7 @@ package lab2.parser.writer.parser;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import lab5Test.Library;
+import lab2.parser.writer.Library;
 import lab2.parser.writer.adapter.LocaleDateAdapterJson;
 import lab2.parser.writer.Reader;
 

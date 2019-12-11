@@ -1,26 +1,28 @@
 package lab5;
 
-import lab5Test.Book;
-import lab5Test.CountBook;
 
 import javax.validation.constraints.NotNull;
 import java.sql.*;
 import java.time.LocalDate;
 
-public class BookDAO implements DAO<lab5Test.Book, Integer> {
+import static org.testng.AssertJUnit.assertEquals;
+
+public class BookDAO implements DAO<Book, Integer> {
 
     /**
      * SQL queries for books table.
      */
-    enum PersonSQL {
+    enum BookSQL {
         GET("SELECT * FROM books  WHERE books.id = (?)"),
         INSERT("INSERT INTO books (id, name, form, overdue_day, price) VALUES ((?), (?), (?), (?), (?)) RETURNING id"),
         DELETE("DELETE FROM books WHERE id = (?) RETURNING id"),
-        UPDATE("UPDATE books SET price = (?) WHERE form = (?) RETURNING id");
+        UPDATE("UPDATE books SET price = (?) WHERE form = (?) RETURNING id"),
+
+        DELETE_OVERDUE_MEDICINES("DELETE FROM books WHERE overdue_day<current_date");
 
         String QUERY;
 
-        PersonSQL(String QUERY) {
+        BookSQL(String QUERY) {
             this.QUERY = QUERY;
         }
     }
@@ -46,14 +48,14 @@ public class BookDAO implements DAO<lab5Test.Book, Integer> {
      * @return false if Book already exist, true if creating success
      */
     @Override
-    public boolean create(lab5Test.Book book) {
+    public boolean create(Book book) {
         boolean result = false;
 
-        try (PreparedStatement statement = connection.prepareStatement(PersonSQL.INSERT.QUERY)) {
+        try (PreparedStatement statement = connection.prepareStatement(BookSQL.INSERT.QUERY)) {
             statement.setInt(1, book.getId());
             statement.setString(2, book.getName());
-            statement.setDate(4, Date.valueOf(book.getIssueDay()));
-            statement.setDate(5, Date.valueOf(book.getReleaseDay()));
+            statement.setDate(3, Date.valueOf(book.getIssueDay()));
+            statement.setDate(4, Date.valueOf(book.getReleaseDay()));
             result = statement.executeQuery().next();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -68,11 +70,11 @@ public class BookDAO implements DAO<lab5Test.Book, Integer> {
      * @return return valid entity if she exist. If entity does not exist return empty User with id = -1.
      */
     @Override
-    public lab5.CountBook read(Integer id) {
-        final lab5Test.Book result = new lab5Test.Book();
+    public Book read(Integer id) {
+        final Book result = new Book();
         result.setId(-1);
 
-        try (PreparedStatement statement = connection.prepareStatement(PersonSQL.GET.QUERY)) {
+        try (PreparedStatement statement = connection.prepareStatement(BookSQL.GET.QUERY)) {
             statement.setInt(1, id);
             final ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -87,22 +89,9 @@ public class BookDAO implements DAO<lab5Test.Book, Integer> {
         return result;
     }
 
-    /**
-     * Update Book`s price by id
-     *
-     * @param book new book state
-     * @return true if success, false if fail
-     */
     @Override
-    public boolean update(lab5Test.Book book) {
-        boolean result = false;
-
-        try(PreparedStatement statement = connection.prepareStatement(PersonSQL.UPDATE.QUERY)) {
-            result = statement.executeQuery().next();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return result;
+    public boolean update(Book model) throws SQLException {
+        return false;
     }
 
     /**
@@ -112,10 +101,10 @@ public class BookDAO implements DAO<lab5Test.Book, Integer> {
      * @return true if book was deleted, false if book not exist
      */
     @Override
-    public boolean delete(lab5Test.Book book) {
+    public boolean delete(Book book) {
         boolean result = false;
 
-        try(PreparedStatement statement = connection.prepareStatement(PersonSQL.DELETE.QUERY)) {
+        try(PreparedStatement statement = connection.prepareStatement(BookSQL.DELETE.QUERY)) {
             statement.setInt(1, book.getId());
             result = statement.executeQuery().next();
         }catch (SQLException e) {
@@ -124,14 +113,11 @@ public class BookDAO implements DAO<lab5Test.Book, Integer> {
         return result;
     }
 
-    @Override
-    public boolean update(CountBook countBook) throws SQLException {
-        return false;
-    }
 
-    @Override
-    public boolean delete(CountBook countBook) throws SQLException {
-        return false;
+    public void deleteWhereOverdue() throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(BookSQL.DELETE_OVERDUE_MEDICINES.QUERY);
+        statement.execute();
+        statement.close();
     }
 
     /**
@@ -141,16 +127,13 @@ public class BookDAO implements DAO<lab5Test.Book, Integer> {
      * @return Book object
      * @throws SQLException
      */
-    @Override
-    public lab5Test.Book resultSetToObj(ResultSet rs) throws SQLException {
-        lab5Test.Book book = new Book();
+    public Book resultSetToObj(ResultSet rs) throws SQLException {
+        Book book = new Book();
 
-        if(rs.next()) {
-            book.setId(rs.getInt("id"));
-            book.setName(rs.getString("name"));
-            book.setIssueDay(LocalDate.parse(rs.getDate("issue_day").toString()));
-            book.setReleaseDay(LocalDate.parse(rs.getDate("release_day").toString()));
-        }
+        book.setId(rs.getInt("id"));
+        book.setName(rs.getString("name"));
+        book.setIssueDay(LocalDate.parse(rs.getDate("issue_day").toString()));
+        book.setReleaseDay(LocalDate.parse(rs.getDate("release_day").toString()));
         return book;
     }
 

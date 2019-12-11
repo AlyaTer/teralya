@@ -1,6 +1,6 @@
 package lab2.parser.writer.parser;
 
-import lab5Test.Library;
+import lab2.parser.writer.Library;
 import lab2.parser.writer.Reader;
 
 import javax.xml.bind.JAXBContext;

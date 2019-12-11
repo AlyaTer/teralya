@@ -64,7 +64,7 @@ public class CountBookDAO implements DAO<CountBook, Integer> {
      * @throws SQLException
      */
     @Override
-    public CountBook read(Integer count) throws SQLException {
+    public Book read(Integer count) throws SQLException {
         CountBook result = new CountBook();
         result.setId(-1);
         try(PreparedStatement statement = connection.prepareStatement(CountMedicineSQL.GET.QUERY)) {
@@ -80,15 +80,7 @@ public class CountBookDAO implements DAO<CountBook, Integer> {
         }
     }
 
-    @Override
-    public boolean update(CountBook model) throws SQLException {
-        return false;
-    }
 
-    @Override
-    public boolean delete(CountBook model) throws SQLException {
-        return false;
-    }
 
     /**
      * Update CountBook by id
@@ -98,7 +90,7 @@ public class CountBookDAO implements DAO<CountBook, Integer> {
      * @throws SQLException
      */
     @Override
-    public boolean update(lab5Test.CountBook countBook) throws SQLException {
+    public boolean update(lab5.CountBook countBook) throws SQLException {
         try(PreparedStatement statement = connection.prepareStatement(CountMedicineSQL.UPDATE.QUERY)) {
             statement.setInt(1, countBook.getCount());
             statement.setInt(2, countBook.getId());
@@ -115,13 +107,14 @@ public class CountBookDAO implements DAO<CountBook, Integer> {
      * @throws SQLException
      */
     @Override
-    public boolean delete(lab5Test.CountBook countBook) throws SQLException {
+    public boolean delete(lab5.CountBook countBook) throws SQLException {
         try(PreparedStatement statement = connection.prepareStatement(CountMedicineSQL.DELETE.QUERY)) {
             statement.setInt(1, countBook.getId());
 
             return statement.executeQuery().next();
         }
     }
+
 
     /**
      * Convert ResultSent into CountBook

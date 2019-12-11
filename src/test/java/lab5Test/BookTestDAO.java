@@ -1,5 +1,6 @@
 package lab5Test;
 
+import lab5.Book;
 import lab5.BookDAO;
 import lab5.ConnectionManager;
 import org.testng.annotations.AfterTest;
@@ -61,10 +62,6 @@ public class BookTestDAO {private BookDAO bookDAO;
             assertEquals(bookDAO.resultSetToObj(resultSet), book);
     }
 
-    @Test
-    public void updateTest() {
-        assertEquals(bookDAO.update(bookForUpdate), true);
-    }
 
     @Test
     public void deleteTest() {
