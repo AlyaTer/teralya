@@ -113,6 +113,9 @@ public class Book implements Serializable {
         return id;
     }
 
+    public void setBook(Book book_id) {
+    }
+
 
     public static class BuilderB {
         Book book;

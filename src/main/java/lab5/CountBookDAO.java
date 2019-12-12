@@ -64,7 +64,7 @@ public class CountBookDAO implements DAO<CountBook, Integer> {
      * @throws SQLException
      */
     @Override
-    public Book read(Integer count) throws SQLException {
+    public CountBook read(Integer count) throws SQLException {
         CountBook result = new CountBook();
         result.setId(-1);
         try(PreparedStatement statement = connection.prepareStatement(CountMedicineSQL.GET.QUERY)) {

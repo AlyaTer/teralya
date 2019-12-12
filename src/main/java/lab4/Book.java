@@ -7,6 +7,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlElement;
@@ -33,6 +34,7 @@ public class Book implements Serializable {
     @XmlElement
     @NotNull(message = "Name can't be null!")
     @Size(min = 3, max = 10, message = "{Size.name}")
+//    @Pattern()
     private String name;
 
     @XmlElement

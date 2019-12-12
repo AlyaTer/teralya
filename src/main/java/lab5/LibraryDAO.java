@@ -20,8 +20,8 @@ public class LibraryDAO implements DAO<Library, Integer> {
         DELETE("DELETE FROM library WHERE id = (?) RETURNING id"),
         UPDATE("UPDATE library SET name = (?) WHERE id = (?) RETURNING id"),
 
-        GET_COUNT_MED_LIST("SELECT * FROM count_books WHERE library_id=(?)"),
-        GET_OVERDUE_MEDICINES("SELECT books.* " +
+        GET_COUNT_BOOK_LIST("SELECT * FROM count_books WHERE library_id=(?)"),
+        GET_OVERDUE_BOOKS("SELECT books.* " +
                 "FROM count_books JOIN books ON count_books.book_id=books.id "+
                 "JOIN library ON count_books.library_id=library.id "+
                 "WHERE library.id=(?) AND books.issue_day<current_date"),
@@ -77,7 +77,7 @@ public class LibraryDAO implements DAO<Library, Integer> {
      * @throws SQLException
      */
     @Override
-    public Book read(Integer id) throws SQLException {
+    public Library read(Integer id) throws SQLException {
         Library result = new Library();
         result.setId(-1);
         PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET.QUERY);
@@ -133,7 +133,7 @@ public class LibraryDAO implements DAO<Library, Integer> {
     public List<CountBook> getListCountBook(Library library) throws SQLException {
         List<CountBook> list = new ArrayList<>();
 
-        try( PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_COUNT_MED_LIST.QUERY)) {
+        try( PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_COUNT_BOOK_LIST.QUERY)) {
             statement.setInt(1, library.getId());
             ResultSet resultSet = statement.executeQuery();
 
@@ -158,7 +158,7 @@ public class LibraryDAO implements DAO<Library, Integer> {
     private List<Book> getListOfOverdueBooks(Library library) throws SQLException {
         List<Book> list = new ArrayList<>();
 
-        try(PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_OVERDUE_MEDICINES.QUERY)) {
+        try(PreparedStatement statement = connection.prepareStatement(LibrarySQL.GET_OVERDUE_BOOKS.QUERY)) {
             statement.setInt(1, library.getId());
             ResultSet resultSet = statement.executeQuery();
 

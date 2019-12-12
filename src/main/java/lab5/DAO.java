@@ -10,7 +10,7 @@ import java.sql.SQLException;
  */
 public interface DAO<T, Key> {
     boolean create(T model) throws SQLException;
-    Book read(Key key) throws SQLException;
+    T read(Key key) throws SQLException;
     boolean update(T model) throws SQLException;
     boolean delete(T model) throws SQLException;
 
