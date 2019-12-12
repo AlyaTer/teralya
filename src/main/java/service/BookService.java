@@ -16,6 +16,9 @@ public class BookService {
         this.library= library;
     }
 
+    public BookService(lab5.Library library) {
+    }
+
     /**
      * @return list of all book in the library
      */

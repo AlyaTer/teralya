@@ -1,6 +1,7 @@
 package lab5Test;
 
 import lab5.ConnectionManager;
+import lab5.Worker;
 import lab5.WorkerDAO;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;

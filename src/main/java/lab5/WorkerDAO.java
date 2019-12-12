@@ -70,7 +70,7 @@ public class  WorkerDAO implements DAO<lab5.Worker, Integer> {
      * @return return valid entity if she exist. If entity does not exist return empty Worker with id = -1.
      */
     @Override
-    public Book read(Integer id) {
+    public Worker read(Integer id) {
         lab5.Worker result = new lab5.Worker();
         result.setId(-1);
 

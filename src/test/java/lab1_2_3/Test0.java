@@ -1,9 +1,9 @@
 package lab1_2_3;
 
-import lab5Test.Book;
-import lab5Test.CountBook;
-import lab5Test.Library;
-import lab5Test.Worker;
+import lab5.Book;
+import lab5.CountBook;
+import lab5.Library;
+import lab5.Worker;
 import service.BookService;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
