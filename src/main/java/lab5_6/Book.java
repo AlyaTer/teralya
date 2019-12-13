@@ -1,4 +1,4 @@
-package lab4;
+package lab5_6;
 
 
 import lab1_2.parser.writer.adapter.LocaleDateAdapterXml;
@@ -33,7 +33,6 @@ public class Book implements Serializable {
     @XmlElement
     @NotNull(message = "Name can't be null!")
     @Size(min = 3, max = 10, message = "{Size.name}")
-//    @Pattern()
     private String name;
 
     @XmlElement
@@ -112,6 +111,9 @@ public class Book implements Serializable {
     @NotNull
     public Integer getId() {
         return id;
+    }
+
+    public void setBook(Book book_id) {
     }
 
 

@@ -16,7 +16,7 @@ public class BookService {
         this.library= library;
     }
 
-    public BookService(lab5.Library library) {
+    public BookService(lab5_6.Library library) {
     }
 
     /**

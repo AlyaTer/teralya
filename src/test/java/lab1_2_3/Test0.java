@@ -1,9 +1,9 @@
 package lab1_2_3;
 
-import lab5.Book;
-import lab5.CountBook;
-import lab5.Library;
-import lab5.Worker;
+import lab5_6.Book;
+import lab5_6.CountBook;
+import lab5_6.Library;
+import lab5_6.Worker;
 import service.BookService;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -130,7 +130,7 @@ public class Test0 {
 
     @Test
     public void sortBookByCountTest(){
-        List<CountBook> sortedBooks = bookService.getSortedByCount();
+        List<lab3.CountBook> sortedBooks = bookService.getSortedByCount();
 
         assertEquals(library.getBooks(),sortedBooks);
     }

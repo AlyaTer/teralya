@@ -1,56 +1,18 @@
-package lab4;
+package lab1_2.parser.writer;
 
-
-import lab1_2.parser.writer.adapter.LocaleDateAdapterXml;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
-import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-
-//public class Book implements Comparable<Book> {
-  //  @JsonDeserialize(builder = Book.Builder.class)
 
 public class Book implements Serializable {
 
 
     public static final Integer MAXNAMELENGTH = 20;
 
-    @NotNull(message = "The field can`t be null")
-    @PositiveOrZero
     private Integer id;
-
-    @XmlJavaTypeAdapter(LocaleDateAdapterXml.class)
-
-    @XmlElement
-    @NotNull(message = "Name can't be null!")
-    @Size(min = 3, max = 10, message = "{Size.name}")
-//    @Pattern()
     private String name;
-
-    @XmlElement
-    @NotNull(message = "The field can`t be null")
-    @PositiveOrZero
     private LocalDate releaseDay;
-
-    @NotNull(message = "The field can`t be null")
-    @PositiveOrZero
     private LocalDate issueDay;
-
-    @NotNull(message = "The field can`t be null")
-    @PositiveOrZero
     private LocalDate returnDay;
-
-    @NotNull(message = "The field can`t be null")
-    @PositiveOrZero
     private Integer count;
 
 
@@ -109,7 +71,6 @@ public class Book implements Serializable {
         this.id = id;
     }
 
-    @NotNull
     public Integer getId() {
         return id;
     }
@@ -148,30 +109,6 @@ public class Book implements Serializable {
                 throw new IllegalArgumentException("Wrong input!");
             book.issueDay = date;
             return this;
-        }
-
-        public Book build() throws IllegalStateException {
-
-            try {
-                Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-                //Book book = new Book();
-                Set<ConstraintViolation<Book>> constraintViolations = validator.validate(book);
-
-                if (constraintViolations.isEmpty())
-                    return book;
-                else {
-                    Set<String> exceptions = new HashSet<>();
-                    for (ConstraintViolation constraintViolation : constraintViolations) {
-                        String fieldName = constraintViolation.getPropertyPath().toString().toUpperCase();
-                        exceptions.add(fieldName + " " + constraintViolation.getMessage());
-                    }
-                    exceptions.forEach(System.out::println);
-                    throw new IllegalStateException(exceptions.toString() + " ");
-                }
-            } catch (IllegalStateException e) {
-                throw new IllegalStateException(e.getMessage());
-
-            }
         }
     }
 }
