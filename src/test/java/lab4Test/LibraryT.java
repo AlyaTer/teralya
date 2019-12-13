@@ -17,11 +17,11 @@ public class LibraryT {
     @BeforeTest
     public void before() {
         Book book = new Book.BuilderB()
-                .setId(1)
-                .setName("Name")
-                .setIssueDay(LocalDate.of(2019, 2, 21))
-                .setReleaseDay(LocalDate.of(2019, 7, 9))
-                .build();
+        .setId(1)
+        .setName("Name")
+        .setIssueDay(LocalDate.of(2019, 2, 21))
+        .setReleaseDay(LocalDate.of(2019, 7, 9))
+        .build();
         CountBook countBook = new CountBook.BuilderCB()
                 .setId(1)
                 .setCount(200)
@@ -38,8 +38,8 @@ public class LibraryT {
     }
 
     @Test
-    public void pharmacyBuilderTest() {
-        Library pharmacy = new Library.BuilderL()
+    public void libraryBuilderTest() {
+        Library library = new Library.BuilderL()
                 .setId(1)
                 .setCountBooks(countBooks)
                 .setName("Name")
@@ -48,8 +48,8 @@ public class LibraryT {
     }
 
     @Test(expectedExceptions = IllegalStateException.class)
-    public void pharmacyBuilderNegativeTest() {
-        Library pharmacy = new Library.BuilderL()
+    public void libraryBuilderNegativeTest() {
+        Library library = new Library.BuilderL()
                 .setId(-1)
                 .setCountBooks(countBooks)
                 .setName("")
